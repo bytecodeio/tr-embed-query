@@ -7,17 +7,12 @@ const path = require('path')
 
 const puppeteer = require('puppeteer')
 
-//const test_css = require('./test.css')
 
 
 const localConfig = path.resolve(__dirname, './looker.ini')
 const settings = new NodeSettingsIniFile(localConfig);
 const session = new NodeSession(settings);
 const sdk = new Looker40SDK(session);
-
-console.log(sdk)
-
-//var createSignedUrl = require("./auth/auth_utils");
 
 const app = express();
 
@@ -184,12 +179,5 @@ app.post('/api/auth/sso', bodyParser.json(), async (req, res) => {
     return res.json(results);
 })
 
-//Use this for embed user
-// app.get('/api/auth', (req, res) => {
-//     const src = req.query.src;
-//     const user = embed_user;
-//     const url = createSignedUrl(src, user, host, secret);
-//     res.json({ url });
-// })
 
 app.listen(port, () => console.log(`Server started on ${port}`));
