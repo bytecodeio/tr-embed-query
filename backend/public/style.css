@@ -1,0 +1,36 @@
+/* tr > th {
+    padding: 10px 5px !important;
+    background-color: #6c6c6c !important;
+    font-weight: 600;
+    font-size: 12px;
+    color: #fff;
+} */
+
+th {
+    background-color: #dae4ed !important;
+    padding: 6px 9px !important;
+    border: 1px solid #a8acae;
+    /* border-top: 1px solid  #a8acae; */
+    /* border-bottom: 1px solid; */
+    color: #212223;
+}
+
+td {
+    border-bottom: 1px solid #a8acae;
+    border-left: 1px solid #a8acae;
+    padding: 6px 9px;
+    background-color: white !important;
+    color: #212223 !important;
+}
+
+td:last-child {
+    border-right: 1px solid #a8acae;
+}
+
+/* tr > td {
+    padding: 5px !important;
+}
+
+tr:nth-child(even) td {
+    background-color: #f9f9f9 !important;
+} */

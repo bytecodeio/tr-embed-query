@@ -1,0 +1,10 @@
+[Looker]
+api_version=4.0
+
+base_url=
+
+client_id=
+
+client_secret=
+
+verify_ssl=false

@@ -1,0 +1,23 @@
+{
+  "name": "express-react-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "author": "Aaron Modic",
+  "license": "MIT",
+  "dependencies": {
+    "@looker/sdk": "^25.10.0",
+    "@looker/sdk-node": "^25.10.0",
+    "body-parser": "^1.19.0",
+    "cheerio": "^1.1.2",
+    "concurrently": "^6.2.1",
+    "create-hmac": "^1.1.7",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.12",
+    "puppeteer": "^24.19.0"
+  }
+}
