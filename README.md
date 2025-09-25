@@ -1,4 +1,4 @@
-### Setup
+## Setup
 
 This project was created for the use case of using the Embedded Query
 
