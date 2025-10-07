@@ -1,11 +1,8 @@
-const { Looker40SDK, Looker31SDK } = require('@looker/sdk');
-const { NodeSettingsIniFile, NodeSession } = require('@looker/sdk-node');
 const bodyParser = require('body-parser');
 const express = require('express');
 const { readFile, readFileSync } = require('fs');
 const path = require('path')
 
-const jwt = require('jsonwebtoken')
 
 const puppeteer = require('puppeteer')
 
