@@ -5,9 +5,14 @@ const express = require('express');
 const { readFile, readFileSync } = require('fs');
 const path = require('path')
 
-const jwt = require('jsonwebtoken')
-
 const puppeteer = require('puppeteer')
+
+
+
+const localConfig = path.resolve(__dirname, './looker.ini')
+const settings = new NodeSettingsIniFile(localConfig);
+const session = new NodeSession(settings);
+const sdk = new Looker40SDK(session);
 
 const app = express();
 
@@ -22,37 +27,26 @@ const embed_user = {
     "last_name": "SSO",
     "session_length": 36000,
     "force_logout_login": true,
-    "group_ids": [10],
+    "group_ids": [2],
     "embed_domain":"http://localhost:3000"
-}
+  }
 
 
-const getAdminUserToken = () => {
-    return fetch('https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/login?client_id=D4G6y6NCkBxxqgS7Xpmr&client_secret=zYp3hBNvNv4VckNBP7hmVkM2',
-        {
-            method:'POST'
-        }
-    ).then(res => res.json())
-}
-
-app.get('/api/customers', async (req,res) => {
+app.get('/api/customers', (req,res) => {
     const customers = [
         {id:1, firstName:"Aaron", lastName:"Modic"}
     ]
-    res.json({"test":"test"});
+
+    res.json(customers);
 })
 
 app.post('/api/query/slug', bodyParser.json(), async (req, res) => {
     let {slug} = req.body;
+    console.log(slug)
     let query = {};
     try {
-        let token = await getAdminUserToken();
-        query = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries/slug/${slug}`, {
-            method:'GET',
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            }
-        }).then(res => res.json())
+        //query = await sdk.ok(sdk.me())
+        query = await sdk.ok(sdk.query_for_slug(slug))
         console.log("query", query)
     } catch (ex) {
         console.error(`Error getting slug: ${ex}`);
@@ -65,14 +59,7 @@ app.post('/api/query/run', bodyParser.json(), async (req, res) => {
     let {payload} = req.body;
     let query = {};
     try {
-        let token = await getAdminUserToken();
-        query = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries`, {
-            method:'POST',
-            body: JSON.stringify(payload),
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            }
-        }).then(res => res.json())
+        query = await sdk.ok(sdk.create_query(payload))
     } catch (ex) {
         console.error(`Error running query: ${ex}`);
     }
@@ -84,14 +71,7 @@ app.post('/api/model/explore', bodyParser.json(), async (req, res) => {
     let {model,explore} = req.body;
     let fields = [];
     try {
-        let token = await getAdminUserToken();
-        fields = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/lookml_models/${model}/explores/${explore}`, {
-            method:'GET',
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            }
-        }).then(res => res.json())
-        console.log(fields)
+        fields = await sdk.ok(sdk.lookml_model_explore({lookml_model_name:model, explore_name:explore, fields:'fields'}))
     } catch (ex) {
         console.error(ex);
     }
@@ -102,13 +82,7 @@ app.post('/api/query/count', bodyParser.json(), async (req, res) => {
     let {id} = req.body;
     let results = [];
     try {
-        let token = await getAdminUserToken();
-        results = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries/${id}/run/json`, {
-            method:'GET',
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            }
-        }).then(res => res.json())
+        results = await sdk.ok(sdk.run_query({query_id:id, result_format:'json', cache:true}))
         console.log(results)
     } catch (ex) {
         console.error(ex);
@@ -122,13 +96,7 @@ app.post('/api/query/download/pdf', bodyParser.json(), async (req, res) => {
     let file = {};
     let pdfBuffer;
     try {
-        let token = await getAdminUserToken();
-        query = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries/slug/${slug}`, {
-            method:'GET',
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            }
-        }).then(res => res.json())
+        query = await sdk.ok(sdk.query_for_slug(slug))
     } catch (ex) {
         console.error(ex);
     }
@@ -136,13 +104,7 @@ app.post('/api/query/download/pdf', bodyParser.json(), async (req, res) => {
 
     if (query) {
         try {
-            let token = await getAdminUserToken();
-            file = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries/${query.slug}/run/html`, {
-                method:'GET',
-                headers:{
-                    Authorization: `Bearer ${token.access_token}`
-                }
-            }).then(res => res.text())
+            file = await sdk.ok(sdk.run_query({result_format:'html', 'query_id':query.slug}));
 
             const cssPath = path.join(__dirname, 'public', 'style.css');
             const css = await readFileSync(cssPath, 'utf8');
@@ -175,13 +137,7 @@ app.post('/api/query/download/csv', bodyParser.json(), async (req, res) => {
     let query = {};
     let file = {};
     try {
-        let token = await getAdminUserToken();
-        query = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries/slug/${slug}`, {
-            method:'GET',
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            }
-        }).then(res => res.json())
+        query = await sdk.ok(sdk.query_for_slug(slug))
     } catch (ex) {
         console.error(ex);
     }
@@ -189,13 +145,7 @@ app.post('/api/query/download/csv', bodyParser.json(), async (req, res) => {
 
     if (query) {
         try {
-            let token = await getAdminUserToken();
-            file = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/queries/${query.slug}/run/csv`, {
-                method:'GET',
-                headers:{
-                    Authorization: `Bearer ${token.access_token}`
-                }
-            }).then(res => res.text())
+            file = await sdk.ok(sdk.run_query({result_format:'csv', 'query_id':query.slug}));
 
         } catch (ex) {
             console.error(ex);
@@ -211,15 +161,7 @@ app.post('/api/auth/sso', bodyParser.json(), async (req, res) => {
     payload.target_url = targetURL;
     let results = '';
     try {
-        //results = await sdk.ok(sdk.create_sso_embed_url(payload))
-        let token = await getAdminUserToken();
-        results = await fetch(`https://c3bac00e-a0f2-48a5-8f1e-4ae3576a2a12.looker.app/api/4.0/embed/sso_url`, {
-            method:'POST',
-            headers:{
-                Authorization: `Bearer ${token.access_token}`
-            },
-            body:JSON.stringify(payload)
-        }).then(res => res.json())
+        results = await sdk.ok(sdk.create_sso_embed_url(payload))
         console.log(results)
     } catch (ex) {
         console.error(ex);
