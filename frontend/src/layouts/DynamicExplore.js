@@ -52,7 +52,7 @@ export const DynamicExplore = () => {
     const handleRunQuery = async (query, risk, selectedColumns = []) => {
         let payload = {...query};
         payload.filter_expression = risk.expression;
-        //payload.fields = [...payload.fields, ...selectedColumns]
+        payload.fields = [...payload.fields, ...selectedColumns]
         let res = await runQuery(payload)
         if (!res) {
             return;
